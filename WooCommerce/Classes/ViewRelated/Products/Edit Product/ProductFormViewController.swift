@@ -134,6 +134,10 @@ final class ProductFormViewController<ViewModel: ProductFormViewModelProtocol>: 
         view.endEditing(true)
     }
 
+    override var shouldShowOfflineBanner: Bool {
+        return true
+    }
+
     // MARK: - Navigation actions handling
 
     override func shouldPopOnBackButton() -> Bool {
@@ -354,24 +358,23 @@ final class ProductFormViewController<ViewModel: ProductFormViewModelProtocol>: 
                 editGroupedProducts()
                 break
             case .variations(let row):
-                ServiceLocator.analytics.track(.productDetailViewVariationsTapped)
-                guard let originalProduct = viewModel.originalProductModel as? EditableProductModel, row.isActionable else {
+                guard row.isActionable else {
                     return
                 }
-                let variationsViewModel = ProductVariationsViewModel(formType: viewModel.formType)
-                let variationsViewController = ProductVariationsViewController(initialViewController: self,
-                                                                               viewModel: variationsViewModel,
-                                                                               product: originalProduct.product)
-                variationsViewController.onProductUpdate = { [viewModel] updatedProduct in
-                    viewModel.updateProductVariations(from: updatedProduct)
+                ServiceLocator.analytics.track(.productDetailViewVariationsTapped)
+                showVariations()
+            case .noPriceWarning(let viewModel):
+                guard viewModel.isActionable else {
+                    return
                 }
-                show(variationsViewController, sender: self)
+                ServiceLocator.analytics.track(.productDetailViewVariationsTapped)
+                showVariations()
             case .attributes(_, let isEditable):
                 guard isEditable else {
                     return
                 }
                 editAttributes()
-            case .status, .noPriceWarning:
+            case .status:
                 break
             }
         }
@@ -403,6 +406,7 @@ final class ProductFormViewController<ViewModel: ProductFormViewModelProtocol>: 
 // MARK: - Configuration
 //
 private extension ProductFormViewController {
+
     func configureNavigationBar() {
         updateNavigationBar()
         updateBackButtonTitle()
@@ -1401,6 +1405,24 @@ private extension ProductFormViewController {
         let viewModel = ProductAddOnsListViewModel(addOns: product.product.addOns)
         let viewController = ProductAddOnsListViewController(viewModel: viewModel)
         show(viewController, sender: self)
+    }
+}
+
+// MARK: Action - Show Product Variations
+//
+private extension ProductFormViewController {
+    func showVariations() {
+        guard let originalProduct = viewModel.originalProductModel as? EditableProductModel else {
+            return
+        }
+        let variationsViewModel = ProductVariationsViewModel(formType: viewModel.formType)
+        let variationsViewController = ProductVariationsViewController(initialViewController: self,
+                                                                       viewModel: variationsViewModel,
+                                                                       product: originalProduct.product)
+        variationsViewController.onProductUpdate = { [viewModel] updatedProduct in
+            viewModel.updateProductVariations(from: updatedProduct)
+        }
+        show(variationsViewController, sender: self)
     }
 }
 

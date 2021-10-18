@@ -8,10 +8,11 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
 
     private var didGetConnectedReaders: Bool = false
     private var connectedReaders = [CardReader]()
-    private let knownReadersProvider: CardReaderSettingsKnownReadersProvider?
+    private let knownReaderProvider: CardReaderSettingsKnownReaderProvider?
 
     private(set) var checkForReaderUpdateInProgress: Bool = false
     private(set) var readerUpdateAvailable: CardReaderSettingsTriState = .isUnknown
+    private(set) var readerBatteryTooLowForUpdates: Bool = false
     private(set) var readerUpdateInProgress: Bool = false
     private(set) var readerUpdateCompletedSuccessfully: Bool = false
 
@@ -21,9 +22,9 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
     var connectedReaderBatteryLevel: String?
     var connectedReaderSoftwareVersion: String?
 
-    init(didChangeShouldShow: ((CardReaderSettingsTriState) -> Void)?, knownReadersProvider: CardReaderSettingsKnownReadersProvider? = nil) {
+    init(didChangeShouldShow: ((CardReaderSettingsTriState) -> Void)?, knownReaderProvider: CardReaderSettingsKnownReaderProvider? = nil) {
         self.didChangeShouldShow = didChangeShouldShow
-        self.knownReadersProvider = knownReadersProvider
+        self.knownReaderProvider = knownReaderProvider
         beginObservation()
     }
 
@@ -60,6 +61,8 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
             connectedReaderBatteryLevel = Localization.unknownBatteryStatus
             return
         }
+
+        readerBatteryTooLowForUpdates = batteryLevel < Constants.batteryLevelNeededForUpdates
 
         let batteryLevelPercent = Int(100 * batteryLevel)
         let batteryLevelString = NumberFormatter.localizedString(from: batteryLevelPercent as NSNumber, number: .decimal)
@@ -143,9 +146,7 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
         self.readerDisconnectInProgress = true
         self.didUpdate?()
 
-        if connectedReaderID != nil {
-            knownReadersProvider?.forgetCardReader(cardReaderID: connectedReaderID!)
-        }
+        knownReaderProvider?.forgetCardReader()
 
         let action = CardPresentPaymentAction.disconnect() { result in
             self.readerDisconnectInProgress = false
@@ -180,6 +181,14 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
         if didChange {
             didChangeShouldShow?(shouldShow)
         }
+    }
+}
+
+// MARK: - Constants
+//
+private extension CardReaderSettingsConnectedViewModel {
+    enum Constants {
+        static let batteryLevelNeededForUpdates = Float(0.5)
     }
 }
 

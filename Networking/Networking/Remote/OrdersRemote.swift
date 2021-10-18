@@ -28,7 +28,7 @@ public class OrdersRemote: Remote {
                 ParameterKeys.page: String(pageNumber),
                 ParameterKeys.perPage: String(pageSize),
                 ParameterKeys.statusKey: statusKey ?? Defaults.statusAny,
-                ParameterKeys.fields: ParameterValues.fieldValues,
+                ParameterKeys.fields: ParameterValues.listFieldValues,
             ]
 
             if let before = before {
@@ -54,7 +54,7 @@ public class OrdersRemote: Remote {
     ///
     public func loadOrder(for siteID: Int64, orderID: Int64, completion: @escaping (Order?, Error?) -> Void) {
         let parameters = [
-            ParameterKeys.fields: ParameterValues.fieldValues
+            ParameterKeys.fields: ParameterValues.singleOrderFieldValues
         ]
 
         let path = "\(Constants.ordersPath)/\(orderID)"
@@ -98,7 +98,7 @@ public class OrdersRemote: Remote {
             ParameterKeys.page: String(pageNumber),
             ParameterKeys.perPage: String(pageSize),
             ParameterKeys.statusKey: Defaults.statusAny,
-            ParameterKeys.fields: ParameterValues.fieldValues
+            ParameterKeys.fields: ParameterValues.listFieldValues
         ]
 
         let path = Constants.ordersPath
@@ -134,19 +134,29 @@ public class OrdersRemote: Remote {
     ///     - completion: Closure to be executed upon completion.
     ///
     public func updateOrder(from siteID: Int64, order: Order, fields: [UpdateOrderField], completion: @escaping (Result<Order, Error>) -> Void) {
-        let path = "\(Constants.ordersPath)/\(order.orderID)"
-        let mapper = OrderMapper(siteID: siteID)
-        let parameters: [String: AnyHashable] = {
-            fields.reduce(into: [:]) { params, field in
-                switch field {
-                case .customerNote:
-                    params[Order.CodingKeys.customerNote.rawValue] = order.customerNote
+        do {
+            let path = "\(Constants.ordersPath)/\(order.orderID)"
+            let mapper = OrderMapper(siteID: siteID)
+            let parameters: [String: Any] = try {
+                try fields.reduce(into: [:]) { params, field in
+                    switch field {
+                    case .customerNote:
+                        params[Order.CodingKeys.customerNote.rawValue] = order.customerNote
+                    case .shippingAddress:
+                        let shippingAddressEncoded = try order.shippingAddress?.toDictionary()
+                        params[Order.CodingKeys.shippingAddress.rawValue] = shippingAddressEncoded
+                    case .billingAddress:
+                        let billingAddressEncoded = try order.billingAddress?.toDictionary()
+                        params[Order.CodingKeys.billingAddress.rawValue] = billingAddressEncoded
+                    }
                 }
-            }
-        }()
+            }()
 
-        let request = JetpackRequest(wooApiVersion: .mark3, method: .post, siteID: siteID, path: path, parameters: parameters)
-        enqueue(request, mapper: mapper, completion: completion)
+            let request = JetpackRequest(wooApiVersion: .mark3, method: .post, siteID: siteID, path: path, parameters: parameters)
+            enqueue(request, mapper: mapper, completion: completion)
+        } catch {
+            completion(.failure(error))
+        }
     }
 
     /// Adds an order note to a specific Order.
@@ -199,16 +209,24 @@ public extension OrdersRemote {
     }
 
     enum ParameterValues {
-        static let fieldValues: String = """
+        // Same as singleOrderFieldValues except we exclude the line_items and shipping fields
+        static let listFieldValues: String = """
             id,parent_id,number,status,currency,customer_id,customer_note,date_created_gmt,date_modified_gmt,date_paid_gmt,\
-            discount_total,discount_tax,shipping_total,shipping_tax,total,total_tax,payment_method,payment_method_title,line_items,shipping,\
+            discount_total,discount_tax,shipping_total,shipping_tax,total,total_tax,payment_method,payment_method_title,\
             billing,coupon_lines,shipping_lines,refunds,fee_lines
             """
+        static let singleOrderFieldValues: String = """
+            id,parent_id,number,status,currency,customer_id,customer_note,date_created_gmt,date_modified_gmt,date_paid_gmt,\
+            discount_total,discount_tax,shipping_total,shipping_tax,total,total_tax,payment_method,payment_method_title,shipping,\
+            billing,coupon_lines,shipping_lines,refunds,fee_lines,line_items
+        """
     }
 
     /// Order fields supported for update
     ///
     enum UpdateOrderField {
         case customerNote
+        case shippingAddress
+        case billingAddress
     }
 }
