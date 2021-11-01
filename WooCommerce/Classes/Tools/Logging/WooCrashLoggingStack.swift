@@ -1,5 +1,6 @@
 import Foundation
 import AutomatticTracks
+import Experiments
 import Storage
 import Yosemite
 
@@ -113,6 +114,10 @@ class WCCrashLoggingDataProvider: CrashLoggingDataProvider {
 
     var buildType: String {
         return BuildConfiguration.current.rawValue
+    }
+
+    var shouldEnableAutomaticSessionTracking: Bool {
+        return CrashLoggingSettings.didOptIn
     }
 
     @objc func updateCrashLoggingSystem(_ notification: Notification) {

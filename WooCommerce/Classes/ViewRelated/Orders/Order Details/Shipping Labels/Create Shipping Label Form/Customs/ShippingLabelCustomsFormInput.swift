@@ -66,7 +66,7 @@ struct ShippingLabelCustomsFormInput: View {
 
     private var contentRows: some View {
         VStack(spacing: 0) {
-            TitleAndValueRow(title: Localization.contentTypeTitle, value: viewModel.contentsType.localizedName, selectable: true) {
+            TitleAndValueRow(title: Localization.contentTypeTitle, value: .placeholder(viewModel.contentsType.localizedName), selectable: true) {
                 showingContentTypes.toggle()
             }
             .sheet(isPresented: $showingContentTypes, content: {
@@ -99,7 +99,7 @@ struct ShippingLabelCustomsFormInput: View {
 
     private var restrictionRows: some View {
         VStack(spacing: 0) {
-            TitleAndValueRow(title: Localization.restrictionTypeTitle, value: viewModel.restrictionType.localizedName, selectable: true) {
+            TitleAndValueRow(title: Localization.restrictionTypeTitle, value: .placeholder(viewModel.restrictionType.localizedName), selectable: true) {
                 showingRestrictionTypes.toggle()
             }
             .sheet(isPresented: $showingRestrictionTypes, content: {
@@ -133,7 +133,9 @@ struct ShippingLabelCustomsFormInput: View {
     private var itnRows: some View {
         VStack(spacing: 0) {
             TitleAndTextFieldRow(title: Localization.itnTitle,
-                                 placeholder: Localization.itnPlaceholder,
+                                 placeholder: viewModel.missingITNForDestination || viewModel.missingITNForClassesAbove2500usd
+                                    ? Localization.itnRequiredPlaceholder
+                                    : Localization.itnPlaceholder,
                                  text: $viewModel.itn)
             Divider()
                 .padding(.leading, Constants.horizontalPadding)
@@ -146,7 +148,7 @@ struct ShippingLabelCustomsFormInput: View {
             }
             .renderedIf(validationErrorMessageForITNRow.isNotEmpty)
 
-            LearnMoreRow(localizedStringWithHyperlink: Localization.learnMoreITNText)
+            LearnMoreRow(content: Localization.learnMoreITNText, contentURL: Constants.itnInfoURL)
         }
     }
 
@@ -166,6 +168,7 @@ private extension ShippingLabelCustomsFormInput {
     enum Constants {
         static let horizontalPadding: CGFloat = 16
         static let verticalPadding: CGFloat = 8
+        static let itnInfoURL = URL(string: "https://pe.usps.com/text/imm/immc5_010.htm")
     }
     enum Localization {
         static let packageNumber = NSLocalizedString("Package %1$d", comment: "Package index in Customs screen of Shipping Label flow")
@@ -195,6 +198,8 @@ private extension ShippingLabelCustomsFormInput {
                                                 comment: "Title for the ITN row in Customs screen of Shipping Label flow")
         static let itnPlaceholder = NSLocalizedString("Enter ITN (Optional)",
                                                       comment: "Placeholder for the ITN row in Customs screen of Shippling Label flow")
+        static let itnRequiredPlaceholder = NSLocalizedString("Enter ITN",
+                                                              comment: "Placeholder for the required ITN row in Customs screen of Shipping Label flow")
         static let itnMissingForDestination = NSLocalizedString("ITN is required for shipments to %1$@",
                                                                 comment: "Error message for missing ITN for destination country in" +
                                                                     "Customs screen of Shipping Label flow. The placeholder is the destination country.")
@@ -203,10 +208,8 @@ private extension ShippingLabelCustomsFormInput {
                                                                         "Customs screen of Shipping Label flow")
         static let itnInvalidFormat = NSLocalizedString("Invalid ITN format",
                                                         comment: "Error message for invalid format of ITN in Customs screen of Shipping Label flow")
-        static let learnMoreITNText = NSLocalizedString("<a href=\"https://pe.usps.com/text/imm/immc5_010.htm\">" +
-                                                            "Learn more</a> about Internal Transaction Number",
-                                                        comment: "A label prompting users to learn more about internal " +
-                                                            "transaction number with an embedded hyperlink")
+        static let learnMoreITNText = NSLocalizedString("Learn more about Internal Transaction Number",
+                                                        comment: "A label prompting users to learn more about internal transaction number")
         static let packageContentSection = NSLocalizedString("Package Content",
                                                              comment: "Title of Package Content section in Customs screen of Shipping Label flow")
     }
