@@ -197,14 +197,11 @@ private extension CardPresentPaymentsOnboardingUseCase {
     }
 
     func isWCPayVersionSupported(plugin: SystemPlugin) -> Bool {
-        plugin.version.compare(Constants.supportedWCPayVersion, options: .numeric) != .orderedAscending
+        VersionHelpers.compare(plugin.version, Constants.minimumSupportedWCPayVersion) != .orderedAscending
     }
 
     func isWCPayActivated(plugin: SystemPlugin) -> Bool {
-        // For now we are overriding networkActivated in SystemStatusMapper
-        // to convey active / not active for a plugin.
-        // TODO - replace with simply `activated` as part of #5269
-        return plugin.networkActivated
+        return plugin.active
     }
 
     func getWCPayAccount() -> PaymentGatewayAccount? {
@@ -222,8 +219,7 @@ private extension CardPresentPaymentsOnboardingUseCase {
     }
 
     func isWCPayInTestModeWithLiveStripeAccount(account: PaymentGatewayAccount) -> Bool {
-        // TODO: not implemented yet
-        return false
+        account.isLive && account.isInTestMode
     }
 
     func isStripeAccountUnderReview(account: PaymentGatewayAccount) -> Bool {
@@ -268,6 +264,6 @@ private extension PaymentGatewayAccount {
 
 private enum Constants {
     static let pluginName = "WooCommerce Payments"
-    static let supportedWCPayVersion = "2.9"
+    static let minimumSupportedWCPayVersion = "3.2.1"
     static let supportedCountryCodes = ["US"]
 }

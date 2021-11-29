@@ -15,6 +15,14 @@ final class IconsTests: XCTestCase {
         XCTAssertNotNil(UIImage.alignJustifyImage)
     }
 
+    func test_alarmBellRing_image_is_not_nil() {
+        XCTAssertNotNil(UIImage.alarmBellRingImage)
+    }
+
+    func test_analytics_image_is_not_nil() {
+        XCTAssertNotNil(UIImage.analyticsImage)
+    }
+
     func testNoticeImageIsNotNil() {
         XCTAssertNotNil(UIImage.noticeImage)
     }
@@ -226,6 +234,10 @@ final class IconsTests: XCTestCase {
         XCTAssertNotNil(UIImage.moreImage)
     }
 
+    func test_multipleUsers_image_is_not_nil() {
+        XCTAssertNotNil(UIImage.multipleUsersImage)
+    }
+
     func test_payment_card_reader_scanning_image() {
         XCTAssertNotNil(UIImage.cardReaderScanning)
     }
@@ -240,6 +252,22 @@ final class IconsTests: XCTestCase {
 
     func test_payment_card_reader_connecting_image() {
         XCTAssertNotNil(UIImage.cardReaderConnecting)
+    }
+
+    func test_payment_card_reader_update_progress_background() {
+        XCTAssertNotNil(UIImage.cardReaderUpdateProgressBackground)
+    }
+
+    func test_payment_card_reader_update_progress_arrow() {
+        XCTAssertNotNil(UIImage.cardReaderUpdateProgressArrow)
+    }
+
+    func test_payment_card_reader_update_progress_checkmark() {
+        XCTAssertNotNil(UIImage.cardReaderUpdateProgressCheckmark)
+    }
+
+    func test_payment_card_reader_low_battery() {
+        XCTAssertNotNil(UIImage.cardReaderLowBattery)
     }
 
     func test_payment_card_image() {
@@ -499,5 +527,17 @@ final class IconsTests: XCTestCase {
 
     func test_lightningImage_is_not_nil() {
         XCTAssertNotNil(UIImage.lightningImage)
+    }
+
+    func test_shoppingCartIcon_is_not_nil() {
+        XCTAssertNotNil(UIImage.shoppingCartIcon)
+    }
+
+    func test_creditCardIcon_is_not_nil() {
+        XCTAssertNotNil(UIImage.creditCardIcon)
+    }
+
+    func test_cardReaderManualIcon_is_not_nil() {
+        XCTAssertNotNil(UIImage.cardReaderManualIcon)
     }
 }

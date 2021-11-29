@@ -1,3 +1,4 @@
+import Combine
 import Foundation
 import Yosemite
 
@@ -10,21 +11,30 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
     private var connectedReaders = [CardReader]()
     private let knownReaderProvider: CardReaderSettingsKnownReaderProvider?
 
-    private(set) var checkForReaderUpdateInProgress: Bool = false
-    private(set) var readerUpdateAvailable: CardReaderSettingsTriState = .isUnknown
-    private(set) var readerBatteryTooLowForUpdates: Bool = false
-    private(set) var readerUpdateInProgress: Bool = false
-    private(set) var readerUpdateCompletedSuccessfully: Bool = false
+    private(set) var optionalReaderUpdateAvailable: Bool = false
+    var readerUpdateInProgress: Bool {
+        readerUpdateProgress != nil
+    }
+    private(set) var readerUpdateProgress: Float? = nil
+    private(set) var readerUpdateError: Error? = nil
+    private var softwareUpdateCancelable: FallibleCancelable? = nil
 
     private(set) var readerDisconnectInProgress: Bool = false
+
+    private var subscriptions = Set<AnyCancellable>()
 
     var connectedReaderID: String?
     var connectedReaderBatteryLevel: String?
     var connectedReaderSoftwareVersion: String?
 
-    init(didChangeShouldShow: ((CardReaderSettingsTriState) -> Void)?, knownReaderProvider: CardReaderSettingsKnownReaderProvider? = nil) {
+    let delayToShowUpdateSuccessMessage: DispatchTimeInterval
+
+    init(didChangeShouldShow: ((CardReaderSettingsTriState) -> Void)?,
+         knownReaderProvider: CardReaderSettingsKnownReaderProvider? = nil,
+         delayToShowUpdateSuccessMessage: DispatchTimeInterval = .seconds(1)) {
         self.didChangeShouldShow = didChangeShouldShow
         self.knownReaderProvider = knownReaderProvider
+        self.delayToShowUpdateSuccessMessage = delayToShowUpdateSuccessMessage
         beginObservation()
     }
 
@@ -37,19 +47,61 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
             guard let self = self else {
                 return
             }
+            self.readerUpdateError = nil
             self.didGetConnectedReaders = true
             self.connectedReaders = readers
             self.updateProperties()
             self.reevaluateShouldShow()
         }
         ServiceLocator.stores.dispatch(action)
+
+        let softwareUpdateAction = CardPresentPaymentAction.observeCardReaderUpdateState { softwareUpdateEvents in
+            softwareUpdateEvents
+                .sink { [weak self] state in
+                    guard let self = self else { return }
+
+                    switch state {
+                    case .started(cancelable: let cancelable):
+                        self.readerUpdateError = nil
+                        self.softwareUpdateCancelable = cancelable
+                        self.readerUpdateProgress = 0
+                        self.track(.cardReaderSoftwareUpdateStarted)
+                    case .installing(progress: let progress):
+                        self.readerUpdateProgress = progress
+                    case .failed(error: let error):
+                        if case CardReaderServiceError.softwareUpdate(underlyingError: let underlyingError, batteryLevel: _) = error,
+                           underlyingError == .readerSoftwareUpdateFailedInterrupted {
+                            // Update was cancelled, don't treat this as an error
+                            break
+                        }
+                        self.readerUpdateError = error
+                        self.track(.cardReaderSoftwareUpdateFailed, error: error)
+                        self.completeCardReaderUpdate(success: false)
+                    case .completed:
+                        self.readerUpdateProgress = 1
+                        self.softwareUpdateCancelable = nil
+                        self.track(.cardReaderSoftwareUpdateSuccess)
+                        // If we were installing a software update, introduce a small delay so the user can
+                        // actually see a success message showing the installation was complete
+                        DispatchQueue.main.asyncAfter(deadline: .now() + self.delayToShowUpdateSuccessMessage) { [weak self] in
+                            self?.completeCardReaderUpdate(success: true)
+                        }
+                    case .available:
+                        self.optionalReaderUpdateAvailable = true
+                    case .none:
+                        self.optionalReaderUpdateAvailable = false
+                    }
+                    self.didUpdate?()
+                }
+                .store(in: &self.subscriptions)
+        }
+        ServiceLocator.stores.dispatch(softwareUpdateAction)
     }
 
     private func updateProperties() {
         updateReaderID()
         updateBatteryLevel()
         updateSoftwareVersion()
-        didUpdate?()
     }
 
     private func updateReaderID() {
@@ -61,8 +113,6 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
             connectedReaderBatteryLevel = Localization.unknownBatteryStatus
             return
         }
-
-        readerBatteryTooLowForUpdates = batteryLevel < Constants.batteryLevelNeededForUpdates
 
         let batteryLevelPercent = Int(100 * batteryLevel)
         let batteryLevelString = NumberFormatter.localizedString(from: batteryLevelPercent as NSNumber, number: .decimal)
@@ -78,70 +128,51 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
         connectedReaderSoftwareVersion = String.localizedStringWithFormat(Localization.versionLabelFormat, softwareVersion)
     }
 
-    /// Dispatch a request to check for reader updates
-    ///
-    func checkForCardReaderUpdate() {
-        guard !checkForReaderUpdateInProgress else {
-            return
-        }
-
-        readerUpdateAvailable = .isUnknown
-        checkForReaderUpdateInProgress = true
-        didUpdate?()
-
-        let action = CardPresentPaymentAction.checkForCardReaderUpdate() { [weak self] result in
-            guard let self = self else {
-                return
-            }
-            guard !self.readerDisconnectInProgress else {
-                return
-            }
-            switch result {
-            case .success(let update):
-                self.readerUpdateAvailable = update != nil ? .isTrue : .isFalse
-            case .failure:
-                DDLogError("Unexpected error when checking for reader update")
-                self.readerUpdateAvailable = .isFalse
-            }
-            self.checkForReaderUpdateInProgress = false
-            self.didUpdate?()
-        }
-        ServiceLocator.stores.dispatch(action)
-    }
-
     /// Allows the view controller to kick off a card reader update
     ///
     func startCardReaderUpdate() {
-        self.readerUpdateCompletedSuccessfully = false
-
-        let action = CardPresentPaymentAction.startCardReaderUpdate(
-            onProgress: { [weak self] progress in
-                guard let self = self else {
-                    return
-                }
-                self.readerUpdateInProgress = true
-                self.didUpdate?()
-            },
-            onCompletion: { [weak self] result in
-                guard let self = self else {
-                    return
-                }
-                if case .success() = result {
-                    self.readerUpdateCompletedSuccessfully = true
-                    self.readerUpdateAvailable = .isFalse
-
-                }
-                self.readerUpdateInProgress = false
-                self.didUpdate?()
-            }
-        )
+        track(.cardReaderSoftwareUpdateTapped)
+        let action = CardPresentPaymentAction.startCardReaderUpdate
         ServiceLocator.stores.dispatch(action)
+    }
+
+    var cancelCardReaderUpdate: (() -> ())? {
+        guard let progress = readerUpdateProgress,
+              progress < 0.995 else {
+            return nil
+        }
+        return { [weak self] in
+            guard let self = self else {
+                return
+            }
+            self.track(.cardReaderSoftwareUpdateCancelTapped)
+            self.softwareUpdateCancelable?.cancel(completion: { [weak self] result in
+                if case .failure(let error) = result {
+                    print("=== error canceling software update: \(error)")
+                } else {
+                    self?.track(.cardReaderSoftwareUpdateCanceled)
+                    self?.completeCardReaderUpdate(success: false)
+                }
+            })
+        }
+    }
+
+    func dismissReaderUpdateError() {
+        readerUpdateError = nil
+        didUpdate?()
+    }
+
+    private func completeCardReaderUpdate(success: Bool) {
+        //Avoids a failed mandatory reader update being shown as optional
+        optionalReaderUpdateAvailable = optionalReaderUpdateAvailable && !success
+        readerUpdateProgress = nil
+        didUpdate?()
     }
 
     /// Dispatch a request to disconnect from a reader
     ///
     func disconnectReader() {
-        ServiceLocator.analytics.track(.cardReaderDisconnectTapped)
+        track(.cardReaderDisconnectTapped)
 
         self.readerDisconnectInProgress = true
         self.didUpdate?()
@@ -182,13 +213,10 @@ final class CardReaderSettingsConnectedViewModel: CardReaderSettingsPresentedVie
             didChangeShouldShow?(shouldShow)
         }
     }
-}
 
-// MARK: - Constants
-//
-private extension CardReaderSettingsConnectedViewModel {
-    enum Constants {
-        static let batteryLevelNeededForUpdates = Float(0.5)
+    private func track(_ stat: WooAnalyticsStat, error: Error? = nil) {
+        let updateType = optionalReaderUpdateAvailable ? SoftwareUpdateTypeProperty.optional : SoftwareUpdateTypeProperty.required
+        ServiceLocator.analytics.track(stat, properties: [SoftwareUpdateTypeProperty.name: updateType.rawValue], error: error)
     }
 }
 

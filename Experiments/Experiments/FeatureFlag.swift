@@ -42,15 +42,15 @@ public enum FeatureFlag: Int {
     ///
     case pushNotificationsForAllStores
 
-    /// Allows to create quick order orders
+    /// Allows to create simple payments orders
     ///
-    case quickOrderPrototype
+    case simplePaymentsPrototype
 
     /// Display the bar for displaying the filters in the Order List
     ///
     case orderListFilters
 
-    /// Allows to filter products by a product category, persisting it so the filter can remain after restarting the app
+    /// Allows sites with plugins that include Jetpack Connection Package and without Jetpack-the-plugin to connect to the app
     ///
-    case filterProductsByCategory
+    case jetpackConnectionPackageSupport
 }

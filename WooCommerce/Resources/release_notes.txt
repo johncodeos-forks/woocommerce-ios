@@ -1,3 +1,5 @@
-Some merchants had problems loading order details because of a technical issue with how field names in the REST API are ordered. We’ve made a correction that should address that for you if you were experiencing it.
+Are you managing multiple stores in the app? Today is your lucky day! Our app now supports push notifications for ALL of your stores connected with the same Jetpack/WordPress.com account, not just the currently selected store.
 
-This release contains several other fixes based on your feedback. Please continue to send us feedback – we are listening!
+In-person payments card readers might have firmware software updates – some are super important and are required to be installed immediately. With this release, you can defer the upgrade of the optional updates for a better time.
+
+You’ll also find you can filter the product list by category in this release.

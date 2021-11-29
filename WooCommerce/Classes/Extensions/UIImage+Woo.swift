@@ -13,6 +13,12 @@ extension UIImage {
         return UIImage.gridicon(.addOutline)
     }
 
+    /// Alarm Bell Ring Image
+    ///
+    static var alarmBellRingImage: UIImage {
+        return UIImage(named: "icon-alarm-bell-ring")!
+    }
+
     /// Arrow Up Icon
     ///
     static var arrowUp: UIImage {
@@ -23,6 +29,12 @@ extension UIImage {
     ///
     static var alignJustifyImage: UIImage {
         return UIImage.gridicon(.alignJustify)
+    }
+
+    /// Analytics Image
+    ///
+    static var analyticsImage: UIImage {
+        return UIImage(named: "icon-analytics")!
     }
 
     /// Notice Icon
@@ -372,6 +384,54 @@ extension UIImage {
         return UIImage(named: "card-reader-connecting")!
     }
 
+    /// Card Reader Update background
+    ///
+    static var cardReaderUpdateProgressBackground: UIImage {
+        return UIImage(named: "card-reader-update-progress-background")!
+    }
+
+    /// Card Reader Update arrow
+    ///
+    static var cardReaderUpdateProgressArrow: UIImage {
+        return UIImage(named: "card-reader-update-progress-arrow")!
+    }
+
+    /// Card Reader Update checkmark
+    ///
+    static var cardReaderUpdateProgressCheckmark: UIImage {
+        return UIImage(named: "card-reader-update-progress-checkmark")!
+    }
+
+    /// Card Reader Low Battery
+    ///
+    static var cardReaderLowBattery: UIImage {
+        return UIImage(named: "card-reader-low-battery")!
+    }
+
+    /// Shopping cart
+    ///
+    static var shoppingCartIcon: UIImage {
+        return UIImage(named: "icon-shopping-cart")!
+            .withRenderingMode(.alwaysTemplate)
+            .imageFlippedForRightToLeftLayoutDirection()
+    }
+
+    /// Credit card
+    ///
+    static var creditCardIcon: UIImage {
+        return UIImage(named: "icon-card")!
+            .withRenderingMode(.alwaysTemplate)
+            .imageFlippedForRightToLeftLayoutDirection()
+    }
+
+    /// Card Reader Manual
+    ///
+    static var cardReaderManualIcon: UIImage {
+        return UIImage(named: "icon-card-reader-manual")!
+            .withRenderingMode(.alwaysTemplate)
+            .imageFlippedForRightToLeftLayoutDirection()
+    }
+
     /// Files Download Icon
     ///
     static var cloudImage: UIImage {
@@ -706,6 +766,12 @@ extension UIImage {
     ///
     static var megaphoneIcon: UIImage {
         return UIImage(imageLiteralResourceName: "megaphone").imageFlippedForRightToLeftLayoutDirection()
+    }
+
+    /// Multiple Users Image
+    ///
+    static var multipleUsersImage: UIImage {
+        return UIImage(named: "icon-multiple-users")!
     }
 
     /// Error image
