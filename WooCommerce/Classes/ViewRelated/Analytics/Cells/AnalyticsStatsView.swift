@@ -62,7 +62,7 @@ private struct StatsItem: View {
                     .font(Font.system(size: 28))
                     .foregroundColor(Color(.text))
                 HStack {
-                    AnalyticsPercetageView(
+                    PercentageView(
                         bgColor: .percentageNeutral,
                         percentageTextColor: UIColor.white,
                         percentageValue: "+23%")
@@ -79,20 +79,5 @@ extension StatsItem {
         static let contentInsetLeading: CGFloat = 16
         static let contentInsetBottom: CGFloat = 16
         static let contentInsetTrailing: CGFloat = 16
-    }
-}
-
-private struct AnalyticsPercetageView: View {
-    var bgColor: UIColor
-    var percentageTextColor: UIColor
-    var percentageValue: String
-    var body: some View {
-        ZStack(alignment: .center, content: {
-            Text(percentageValue)
-                .font(Font.system(size: 12))
-                .foregroundColor(Color(percentageTextColor))
-                .padding(EdgeInsets(top: 3, leading: 7, bottom: 3, trailing: 7))
-                .background(RoundedRectangle(cornerRadius: 4).foregroundColor(Color(bgColor)))
-        })
     }
 }

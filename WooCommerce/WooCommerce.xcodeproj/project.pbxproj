@@ -493,6 +493,7 @@
 		26FF455F24BE49EE00B3B2F4 /* DeprecatedStatsDashboardViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 26FF455E24BE49EE00B3B2F4 /* DeprecatedStatsDashboardViewController.swift */; };
 		300E2E26277DCED30008DDF4 /* TitleAndLinkView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E2E25277DCED30008DDF4 /* TitleAndLinkView.swift */; };
 		300E2E28277DE4B10008DDF4 /* AnalyticsStatsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E2E27277DE4B10008DDF4 /* AnalyticsStatsView.swift */; };
+		300E2E30277E83BC0008DDF4 /* PercentageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 300E2E2F277E83BC0008DDF4 /* PercentageView.swift */; };
 		30419930277B9A0F004A317E /* DateRangeModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3041992F277B9A0F004A317E /* DateRangeModel.swift */; };
 		306F943B277A526900DC6111 /* DateRangeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306F943A277A526900DC6111 /* DateRangeView.swift */; };
 		306F943E277A5C7F00DC6111 /* DateRangeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 306F943D277A5C7F00DC6111 /* DateRangeSheet.swift */; };
@@ -2007,6 +2008,8 @@
 		2719B6FD1E6FE78A76B6AC74 /* Pods-WooCommerceTests.release-alpha.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-WooCommerceTests.release-alpha.xcconfig"; path = "../Pods/Target Support Files/Pods-WooCommerceTests/Pods-WooCommerceTests.release-alpha.xcconfig"; sourceTree = "<group>"; };
 		300E2E25277DCED30008DDF4 /* TitleAndLinkView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TitleAndLinkView.swift; sourceTree = "<group>"; };
 		300E2E27277DE4B10008DDF4 /* AnalyticsStatsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsStatsView.swift; sourceTree = "<group>"; };
+		300E2E29277E37F30008DDF4 /* AnalyticsProductsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AnalyticsProductsView.swift; sourceTree = "<group>"; };
+		300E2E2F277E83BC0008DDF4 /* PercentageView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PercentageView.swift; sourceTree = "<group>"; };
 		3041992F277B9A0F004A317E /* DateRangeModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRangeModel.swift; sourceTree = "<group>"; };
 		306F943A277A526900DC6111 /* DateRangeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRangeView.swift; sourceTree = "<group>"; };
 		306F943D277A5C7F00DC6111 /* DateRangeSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DateRangeSheet.swift; sourceTree = "<group>"; };
@@ -4280,6 +4283,7 @@
 				306F943F277A72DF00DC6111 /* DateRangeSheetRow.swift */,
 				30F5C00B277D2BBB00025EF9 /* AnalyticsCardView.swift */,
 				300E2E27277DE4B10008DDF4 /* AnalyticsStatsView.swift */,
+				300E2E29277E37F30008DDF4 /* AnalyticsProductsView.swift */,
 			);
 			path = Cells;
 			sourceTree = "<group>";
@@ -4756,6 +4760,7 @@
 				26B3EC632745916F0075EAE6 /* BindableTextField.swift */,
 				30F5C00F277D433200025EF9 /* TitleAndMoreButtonView.swift */,
 				300E2E25277DCED30008DDF4 /* TitleAndLinkView.swift */,
+				300E2E2F277E83BC0008DDF4 /* PercentageView.swift */,
 			);
 			path = "SwiftUI Components";
 			sourceTree = "<group>";
@@ -8028,6 +8033,7 @@
 				0225C42C2477D0D500C5B4F0 /* ProductFormViewModel.swift in Sources */,
 				020F41E523163C0100776C4D /* TopBannerViewModel.swift in Sources */,
 				30419930277B9A0F004A317E /* DateRangeModel.swift in Sources */,
+				300E2E2A277E37F30008DDF4 /* AnalyticsProductsView.swift in Sources */,
 				7E7C5F792719A8F900315B61 /* EditProductCategoryListViewModel.swift in Sources */,
 				DE525499268C8B32007A5829 /* UIRefreshControl+Woo.swift in Sources */,
 				B541B2172189EED4008FE7C1 /* NSMutableAttributedString+Helpers.swift in Sources */,
@@ -8425,6 +8431,7 @@
 				CC6923AC26010D8D002FB669 /* LoginProloguePageViewController.swift in Sources */,
 				4515C88D25D6BE540099C8E3 /* ShippingLabelAddressFormViewController.swift in Sources */,
 				CE4DA5CA21DEA78E00074607 /* NSDecimalNumber+Helpers.swift in Sources */,
+				300E2E30277E83BC0008DDF4 /* PercentageView.swift in Sources */,
 				CE5F462A23AACA0A006B1A5C /* RefundDetailsDataSource.swift in Sources */,
 				02162726237963AF000208D2 /* ProductFormViewController.swift in Sources */,
 				571CDD5A250ACC470076B8CC /* UITableViewDiffableDataSource+Helpers.swift in Sources */,
